@@ -1,0 +1,13 @@
+{
+  "name": "PiRTV-react",
+  "version": "0.0.1",
+  "private": false,
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "omxcontrol": "0.0.1",
+    "firebase": "~2.2.3",
+    "express": "~4.12.3"
+  }
+}
