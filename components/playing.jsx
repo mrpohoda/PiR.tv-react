@@ -37,16 +37,19 @@ var Playing = React.createClass({
 	render: function(){
 		return (
 			<div>
-				Playing:
+				{this.state.playing.length ? 'Playing:' : null}
+				<ul>
 				{
-					this.state.playing.map(function(movie) {
+					this.state.playing.map(function(movie, index) {
 						return (
-							<div>{movie.title}</div>
+							<li>
+								{movie.title}
+								{index === 0 ? <div><div onClick={this.playNext} className="button alert">Stop &amp; play next</div></div> : null}
+							</li>
 						)
-					})
+					}.bind(this))
 				}
-				{/* <hr /> */}
-				{/* <div onClick={this.playNext}>Play next</div> */}
+				</ul>
 			</div>
 		)
 	}

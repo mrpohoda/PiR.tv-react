@@ -14,7 +14,7 @@ var express = require('express'),
 
 
 // all environments
-app.set('port', process.env.TEST_PORT || 8080);
+app.set('port', process.env.TEST_PORT || 8888);
 // app.use(express.favicon());
 // app.use(express.logger('dev'));
 // app.use(express.bodyParser());
@@ -32,7 +32,7 @@ if ('production' != app.get('env')) {
 			setTimeout(function() {
 				console.log('omx finish');
 				cb();
-			}, 6000);
+			}, 3000);
 		},
 		pause: function() {
 			console.log('omx pause' + videoId);
@@ -53,7 +53,7 @@ app.get('/', function(req, res) {
 // io.set('log level', 1);
 
 server.listen(app.get('port'), function() {
-	console.log('Pirate TV is running on port ' + app.get('port'));
+	console.log('Lenik TV is running on port ' + app.get('port'));
 });
 
 var playlist = [],
@@ -85,6 +85,11 @@ firebaseRef.on("child_added", function(snapshot) {
 	}
 });
 
+firebaseRef.on("child_removed", function(snapshot) {
+	stopVideo();
+	playNext();
+});
+
 function prepareToPlay(video) {
 	fs.exists(getFileName(video), function(exists) {
 		if (exists) {
@@ -98,36 +103,42 @@ function prepareToPlay(video) {
 }
 
 function getFileName(video) {
-	console.log(video);
 	return 'video/' + video.movie.id + '.mp4'; // 'video/%(id)s.%(ext)s'
 }
 
 function playVideo(video) {
-	// stopVideo();
-
 	setTimeout(function() {
 		omx.start(getFileName(video), function() {
-			// video is finished, remove it from the "playing" list
-			playlist.shift();
-
 			// remove it also from the firebase playlist
 			var itemToRemove = new Firebase('https://pirtv.firebaseio.com/playing/' + video.key);
 			itemToRemove.remove();
 
-			// if there are more items in the playlist, play next
-			if (playlist.length) {
-				prepareToPlay(playlist[0]);
-				nowPlaying = playlist[0];
-			}
-			else {
-				nowPlaying = null;
-			}
+			// play next video in playlist
+			playNext(video);
 		});
 	}, 200);
 }
 
+function stopVideo(video) {
+	omx.quit();
+}
+
+function playNext(video) {
+	// video is finished, remove it from the "playing" list
+	playlist.shift();
+
+	// if there are more items in the playlist, play next
+	if (playlist.length) {
+		prepareToPlay(playlist[0]);
+		nowPlaying = playlist[0];
+	}
+	else {
+		nowPlaying = null;
+	}
+}
+
 function download_file(video, cb) {
-	var url = "http://www.youtube.com/watch?v=" + video.id,
+	var url = "http://www.youtube.com/watch?v=" + video.movie.id,
 		fileName = getFileName(video);
 	var runShell = new run_shell('youtube-dl', ['-o', fileName, '-f', '/18/22', url],
 		function(me, buffer) {
