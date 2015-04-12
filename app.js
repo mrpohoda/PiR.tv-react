@@ -78,9 +78,11 @@ firebaseRef.on("child_added", function(snapshot) {
 		movie: snapshot.val()
 	};
 	playlist.push(movie);
+	console.log(movie.key + ' added to the playlist');
 
 	downloadMovieLocally(movie, function () {
 		if (nowPlaying === null) {
+			console.log(movie.key + ' is going to play, nothing is currently playing.');
 			nowPlaying = movie;
 			playVideo(movie);
 		}
@@ -94,37 +96,22 @@ firebaseRef.on("child_removed", function(snapshot) {
 	playNext();
 });
 
-function downloadMovieLocally(video, cb) {
-	fs.exists(getFileName(video), function(exists) {
-		if (exists) {
-			cb();
-		} else {
-			download_file(video, function() {
-				cb();
-			});
-		}
-	});
-}
-
-function getFileName(video) {
-	return 'video/' + video.movie.id + '.mp4'; // 'video/%(id)s.%(ext)s'
-}
-
 function playVideo(video) {
-	setTimeout(function() {
-		omx.start(getFileName(video), function() {
-			// video is finished, remove it from the "playing" list
-			playlist.shift();
+	console.log(video.key + ' just about to start playing...');
+	omx.start(getFileName(video), function() {
+		console.log(video.key + ' finished playing...');
 
-			nowPlaying = null;
+		// video is finished, remove it from the "playing" list
+		playlist.shift();
 
-			// remove it also from the firebase playlist
-			var itemToRemove = new Firebase('https://pirtv.firebaseio.com/playing/' + video.key);
-			itemToRemove.remove();
+		nowPlaying = null;
 
-			playNext();
-		});
-	}, 200);
+		// remove it also from the firebase playlist
+		var itemToRemove = new Firebase('https://pirtv.firebaseio.com/playing/' + video.key);
+		itemToRemove.remove();
+
+		playNext();
+	});
 }
 
 /**
@@ -132,14 +119,35 @@ function playVideo(video) {
  * @return {[type]} [description]
  */
 function playNext() {
-	if (playlist.length) {
+	if (playlist.length && !nowPlaying) {
 		nowPlaying = playlist[0];
-		playVideo(nowPlaying);
+		console.log('playNext is going to play ' + nowPlaying.key + '...');
+		setTimeout(function () {
+			playVideo(nowPlaying);
+		}, 2000);
 	}
 }
 
 function stopVideo(video) {
 	omx.quit();
+}
+
+function getFileName(video) {
+	return 'video/' + video.movie.id + '.mp4'; // 'video/%(id)s.%(ext)s'
+}
+
+function downloadMovieLocally(video, cb) {
+	fs.exists(getFileName(video), function(exists) {
+		if (exists) {
+			console.log(video.key + ' downloaded before...');
+			cb();
+		} else {
+			download_file(video, function() {
+				console.log(video.key + ' succesfully downloaded...');
+				cb();
+			});
+		}
+	});
 }
 
 function download_file(video, cb) {
