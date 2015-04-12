@@ -10,7 +10,9 @@ var Movie = React.createClass({
 			<li className="movie with-chevron" onClick={this.onPlay}>
 				<a className="clearfix" href="javascript:">
 					<img src={this.props.movie.preview} />
-					{this.props.movie.title}
+					<span>{this.props.movie.title}</span>
+					<br />
+					<span className="label">{this.props.movie.category}</span>
 				</a>
 			</li>
 		);

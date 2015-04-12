@@ -79,24 +79,28 @@ firebaseRef.on("child_added", function(snapshot) {
 	};
 	playlist.push(movie);
 
-	if (nowPlaying === null) {
-		nowPlaying = movie;
-		prepareToPlay(nowPlaying);
-	}
+	downloadMovieLocally(movie, function () {
+		if (nowPlaying === null) {
+			nowPlaying = movie;
+			playVideo(movie);
+		}
+	});
 });
 
+// If movie is stopped from the client, child_removed occurs
+// we need to stop the current video and play next one if there is any
 firebaseRef.on("child_removed", function(snapshot) {
 	stopVideo();
 	playNext();
 });
 
-function prepareToPlay(video) {
+function downloadMovieLocally(video, cb) {
 	fs.exists(getFileName(video), function(exists) {
 		if (exists) {
-			playVideo(video);
+			cb();
 		} else {
 			download_file(video, function() {
-				playVideo(video);
+				cb();
 			});
 		}
 	});
@@ -109,32 +113,33 @@ function getFileName(video) {
 function playVideo(video) {
 	setTimeout(function() {
 		omx.start(getFileName(video), function() {
+			// video is finished, remove it from the "playing" list
+			playlist.shift();
+
+			nowPlaying = null;
+
 			// remove it also from the firebase playlist
 			var itemToRemove = new Firebase('https://pirtv.firebaseio.com/playing/' + video.key);
 			itemToRemove.remove();
 
-			// play next video in playlist
-			playNext(video);
+			playNext();
 		});
 	}, 200);
 }
 
-function stopVideo(video) {
-	omx.quit();
+/**
+ * play next video in playlist
+ * @return {[type]} [description]
+ */
+function playNext() {
+	if (playlist.length) {
+		nowPlaying = playlist[0];
+		playVideo(nowPlaying);
+	}
 }
 
-function playNext(video) {
-	// video is finished, remove it from the "playing" list
-	playlist.shift();
-
-	// if there are more items in the playlist, play next
-	if (playlist.length) {
-		prepareToPlay(playlist[0]);
-		nowPlaying = playlist[0];
-	}
-	else {
-		nowPlaying = null;
-	}
+function stopVideo(video) {
+	omx.quit();
 }
 
 function download_file(video, cb) {
@@ -142,11 +147,8 @@ function download_file(video, cb) {
 		fileName = getFileName(video);
 	var runShell = new run_shell('youtube-dl', ['-o', fileName, '-f', '/18/22', url],
 		function(me, buffer) {
-			me.stdout += buffer.toString();
-			// socket.emit("loading", {
-			// 	output: me.stdout
-			// });
-			console.log(me.stdout);
+			// me.stdout += buffer.toString();
+			// console.log(me.stdout);
 		}, cb);
 }
 
