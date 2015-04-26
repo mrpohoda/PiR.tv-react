@@ -6,11 +6,11 @@ var App = React.createClass({
 					<div className="grid-content">
 						<Playing />
 					</div>
-					{/*
-					<div className="small-12 medium-6 grid-content">
+				</div>
+				<div className="grid-block">
+					<div className="grid-content">
 						<Search />
 					</div>
-					*/}
 				</div>
 				<div className="grid-block">
 					<div className="grid-content">

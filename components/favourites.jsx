@@ -13,8 +13,8 @@ var Favourites = React.createClass({
 	onPlayHandler: function(movie){
 		this.refPlaying.push(movie);
 	},
-	render: function(){
-		var favourites = this.state.favourites.sort(function(a, b){
+	sortFavourites: function(items){
+		return items.sort(function(a, b){
 			if (a.category === undefined) {
 				a.category = 'Ostatní';
 			}
@@ -25,6 +25,9 @@ var Favourites = React.createClass({
 			if(a.category > b.category) return 1;
 			return 0;
 		});
+	},
+	render: function(){
+		var favourites = this.sortFavourites(this.state.favourites);;
 		return (
 			<section className="block-list">
 			{

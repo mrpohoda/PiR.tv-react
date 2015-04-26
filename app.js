@@ -35,10 +35,10 @@ if ('production' != app.get('env')) {
 			}, 3000);
 		},
 		pause: function() {
-			console.log('omx pause' + videoId);
+			console.log('omx pause');
 		},
 		quit: function() {
-			console.log('omx stop' + videoId);
+			console.log('omx stop');
 		}
 	}
 }
@@ -57,7 +57,9 @@ server.listen(app.get('port'), function() {
 });
 
 var playlist = [],
-	nowPlaying = null;
+	nowPlaying = null,
+	downloading = [],
+	nowDownloading = false;
 
 //Run and pipe shell script output
 function run_shell(cmd, args, cb, end) {
@@ -87,6 +89,10 @@ firebaseRef.on("child_added", function(snapshot) {
 			playVideo(movie);
 		}
 	});
+});
+
+firebaseRef.on("child_changed", function(childSnapshot, prevChildName) {
+	omx.pause();
 });
 
 // If movie is stopped from the client, child_removed occurs
@@ -142,157 +148,37 @@ function downloadMovieLocally(video, cb) {
 			console.log(video.key + ' downloaded before...');
 			cb();
 		} else {
-			download_file(video, function() {
-				console.log(video.key + ' succesfully downloaded...');
-				cb();
+			downloading.push({
+				video: video,
+				cb: cb
 			});
+			if (!nowDownloading) {
+				download_file();
+			}
 		}
 	});
 }
 
-function download_file(video, cb) {
-	var url = "http://www.youtube.com/watch?v=" + video.movie.id,
-		fileName = getFileName(video);
+/**
+ * get first item from array and download it
+ * @return {[type]} [description]
+ */
+function download_file() {
+	// indicate that download is in progress and that we don't have more simultaneous downloads
+	nowDownloading = true;
+	var item = downloading.shift();
+	var url = "http://www.youtube.com/watch?v=" + item.video.movie.id,
+		fileName = getFileName(item.video);
 	var runShell = new run_shell('youtube-dl', ['-o', fileName, '-f', '/18/22', url],
 		function(me, buffer) {
 			// me.stdout += buffer.toString();
 			// console.log(me.stdout);
-		}, cb);
+		}, function(){
+			item.cb();
+			nowDownloading = false;
+			// if there are some items to be download, download the next one
+			if (downloading.length) {
+				download_file();
+			}
+		});
 }
-
-// //Socket.io Server
-// io.sockets.on('connection', function(socket) {
-
-//   if (nowPlaying) {
-//     socket.emit("video", {
-//       action: 'play',
-//       video: nowPlaying
-//     });
-//   }
-//   broadcastPlaylist();
-
-//   function getFileName(video) {
-//     return 'video/' + video.id + '.mp4'; // 'video/%(id)s.%(ext)s'
-//   }
-
-//   function playVideo(video) {
-//     stopVideo();
-
-//     setTimeout(function () {
-//       nowPlaying = video;
-
-//       // socket.emit - send message only to current user
-//       // socket.broadcast.emit - send message to all except current user
-//       // io.sockets.emit - send message to all
-//       io.sockets.emit("video", {
-//         action: 'play',
-//         video: video
-//       });
-//       omx.start(getFileName(video), function () {
-//         broadcastStop();
-//         if (playlist.length) {
-//           playVideo(playlist.shift());
-//           broadcastPlaylist();
-//         }
-//       });
-//     }, 200);
-//   }
-
-//   function pauseVideo(video) {
-//     nowPlaying.isPaused = !nowPlaying.isPaused;
-//     io.sockets.emit("video", {
-//       action: 'pause',
-//       video: nowPlaying
-//     });
-//     omx.pause();
-//   }
-
-//   function stopVideo(video) {
-//     broadcastStop();
-//     omx.quit();
-//   }
-
-//   function broadcastStop() {
-//     nowPlaying = null;
-//     io.sockets.emit("video", {
-//       action: 'stop'
-//     });
-//   }
-
-//   function broadcastPlaylist() {
-//     io.sockets.emit("playlist", {
-//       data: playlist
-//     });
-//   }
-
-//   function download_file(video, cb) {
-//     var url = "http://www.youtube.com/watch?v=" + video.id,
-//       fileName = getFileName(video);
-//     var runShell = new run_shell('youtube-dl', ['-o', fileName, '-f', '/18/22', url],
-//       function(me, buffer) {
-//         me.stdout += buffer.toString();
-//         socket.emit("loading", {
-//           output: me.stdout
-//         });
-//         console.log(me.stdout);
-//       }, cb);
-//   }
-
-//   socket.on("video", function(data) {
-//     var action = data.action,
-//       video = data.video;
-
-//     if (action === "play") {
-//       fs.exists(getFileName(video), function(exists) {
-//         if (exists) {
-//           playVideo(video);
-//         } else {
-//           download_file(video, function () {
-//               //child = spawn('omxplayer',[id+'.mp4']);
-//               playVideo(video);
-//           });
-//         }
-//       });
-//     }
-//     else if (action === "pause") {
-//       pauseVideo(video);
-//     }
-//     else if (action === "stop") {
-//       stopVideo(video);
-//     }
-//     else if (action === 'favourite' && video) {
-//       var favouritesRef = firebaseRef.child("favourites");
-//       // this $$hashKey is added by Angular and will be resolved when switching from socket.io
-//       // to some Angular version of lib - it's because of JSON.stringify
-//       delete video.$$hashKey;
-//       favouritesRef.child(video.id).set(video);
-//     }
-//     else if (action === 'queue' && video) {
-//       fs.exists(getFileName(video), function(exists) {
-//         if (exists) {
-//           // if this is the first item added to the queue, play it
-//           // this is because "play" is not directly called from the frontend but instead
-//           // everything is being added to the queue
-//           if (!nowPlaying) {
-//             playVideo(video);
-//           }
-//           else {
-//             playlist.push(video);
-//             broadcastPlaylist();
-//           }
-//         } else {
-//           download_file(video, function () {
-//               //child = spawn('omxplayer',[id+'.mp4']);
-//                if (!nowPlaying) {
-//                   playVideo(video);
-//                 }
-//                 else {
-//                   playlist.push(video);
-//                   broadcastPlaylist();
-//                 }
-//           });
-//         }
-//       });
-//     }
-//   });
-// });
