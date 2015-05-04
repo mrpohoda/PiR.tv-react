@@ -7,7 +7,9 @@ var Favourites = React.createClass({
 	},
 	getInitialState: function() {
 		return {
-			favourites: []
+			favourites: [],
+			categories: [],
+			selectedCategory: null
 		};
 	},
 	onPlayHandler: function(movie){
@@ -26,16 +28,45 @@ var Favourites = React.createClass({
 			return 0;
 		});
 	},
-	render: function(){
-		var favourites = this.sortFavourites(this.state.favourites);;
-		return (
-			<section className="block-list">
-			{
-				favourites.map(function(movie) {
-					return <Movie movie={movie} onPlay={this.onPlayHandler} />
-				}.bind(this))
+	getCategories: function(items){
+		var category,
+			categories = [];
+		items.forEach(function (value, key) {
+			category = value.category;
+			if (category && categories.indexOf(category) < 0) {
+				categories.push(category);
 			}
-			</section>
+		});
+		return categories;
+	},
+	setCategory: function(event){
+		var category = event.target.dataset['category'];
+		this.setState({selectedCategory: category});
+	},
+	render: function(){
+		var favourites = this.sortFavourites(this.state.favourites);
+		var categories = this.getCategories(this.state.favourites);
+		var selectedCategory = this.state.selectedCategory || categories[0];
+		favourites = favourites.filter(function(movie){
+			return movie.category === selectedCategory;
+		});
+		return (
+			<div>
+				<ul className="inline-list">
+				{
+					categories.map(function(category){
+						return <li className="button small" data-category={category} onClick={this.setCategory}>{category}</li>
+					}.bind(this))
+				}
+				</ul>
+				<section className="block-list">
+				{
+					favourites.map(function(movie) {
+						return <Movie movie={movie} onPlay={this.onPlayHandler} />
+					}.bind(this))
+				}
+				</section>
+			</div>
 		);
 	}
 });
