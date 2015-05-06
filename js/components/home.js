@@ -1,5 +1,10 @@
-var App = React.createClass({
-	render: function(){
+import React from 'react';
+import Playing from './playing.js';
+import Search from './search.js';
+import Favourites from './favourites.js';
+
+let Home = React.createClass({
+	render() {
 		return (
 			<div className="grid-container">
 				<div className="grid-block">
@@ -22,5 +27,4 @@ var App = React.createClass({
 	}
 });
 
-React.render(<App/>, document.querySelector('#app'));
-
+export default Home;

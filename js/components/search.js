@@ -1,4 +1,6 @@
-var Search = React.createClass({
+import React from 'react';
+
+let Search = React.createClass({
 	handleOnChange: function (event) {
 		var value = event.target.value;
 		debugger;
@@ -11,3 +13,5 @@ var Search = React.createClass({
 		)
 	}
 });
+
+export default Search;

@@ -1,4 +1,7 @@
-var Favourites = React.createClass({
+import React from 'react';
+import Movie from './movie.js';
+
+let Favourites = React.createClass({
 	mixins: [ReactFireMixin],
 	componentWillMount: function() {
 		var refFavourites = new Firebase('https://pirtv.firebaseio.com/favourites');
@@ -70,3 +73,5 @@ var Favourites = React.createClass({
 		);
 	}
 });
+
+export default Favourites;

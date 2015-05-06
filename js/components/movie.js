@@ -1,4 +1,6 @@
-var Movie = React.createClass({
+import React from 'react';
+
+let Movie = React.createClass({
 	onPlay: function(e){
 		var movie = this.props.movie;
 		if (typeof this.props.onPlay === 'function') {
@@ -18,3 +20,5 @@ var Movie = React.createClass({
 		);
 	}
 });
+
+export default Movie;

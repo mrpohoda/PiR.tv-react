@@ -1,4 +1,6 @@
-var Playing = React.createClass({
+import React from 'react';
+
+let Playing = React.createClass({
 	mixins: [ReactFireMixin],
 	componentWillMount: function() {
 		this.refPlaying = new Firebase('https://pirtv.firebaseio.com/playing');
@@ -85,3 +87,5 @@ var Playing = React.createClass({
 		)
 	}
 });
+
+export default Playing;
