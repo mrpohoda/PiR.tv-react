@@ -1,3 +1,7 @@
+.grid-container {
+	margin-top: 1em;
+}
+
 .movie img {
 	float: left;
 	margin-right: 10px;

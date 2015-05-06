@@ -12,11 +12,15 @@ let Home = React.createClass({
 						<Playing />
 					</div>
 				</div>
+				{
+				/*
 				<div className="grid-block">
 					<div className="grid-content">
 						<Search />
 					</div>
 				</div>
+				*/
+				}
 				<div className="grid-block">
 					<div className="grid-content">
 						<Favourites />

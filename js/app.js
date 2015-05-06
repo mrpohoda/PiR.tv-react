@@ -8,10 +8,16 @@ import LoginHandler from './components/login.js';
 let App = React.createClass({
   render() {
     return (
-      <div className="nav">
-        <Link to="app">Home</Link>
-        <Link to="login">Login</Link>
+      <div>
+        {
+        /*
+        <div className="nav">
+          <Link to="app">Home</Link>
+          <Link to="login">Login</Link>
 
+        </div>
+        */
+        }
         {/* this is the importTant part */}
         <RouteHandler/>
       </div>
