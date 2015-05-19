@@ -8,7 +8,7 @@ module.exports = {
     ],
     output: {
         path: __dirname,
-        filename: "bundle.js",
+        filename: "js/bundle.js",
         // Path you're going to use in HTML
         publicPath: '/js/'
     },

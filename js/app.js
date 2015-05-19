@@ -3,7 +3,8 @@ import Router from 'react-router';
 import { DefaultRoute, Link, Route, RouteHandler } from 'react-router';
 
 import HomeHandler from './components/home.js';
-import LoginHandler from './components/login.js';
+// import LoginHandler from './components/login.js';
+var LoginHandler = HomeHandler;
 
 let App = React.createClass({
   render() {

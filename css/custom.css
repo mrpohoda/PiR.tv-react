@@ -5,4 +5,6 @@
 .movie img {
 	float: left;
 	margin-right: 10px;
+	width: 120px;
+	height: 90px;
 }

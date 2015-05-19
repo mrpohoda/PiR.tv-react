@@ -4,6 +4,7 @@
 var express = require('express');
 var bodyParser = require('body-parser');
 var app = express();
+var fs = require('fs');
 var spawn = require('child_process').spawn;
 var omx = require('./scripts/omxcontrol.js');
 var Firebase = require("firebase");
@@ -27,7 +28,7 @@ if ('production' != app.get('env')) {
 			setTimeout(function() {
 				console.log('omx finish');
 				cb();
-			}, 3000);
+			}, 30000);
 		},
 		pause: function() {
 			console.log('omx pause');
