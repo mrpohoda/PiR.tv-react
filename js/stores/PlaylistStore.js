@@ -4,7 +4,7 @@ var FluxPlayerConstants = require('../constants/FluxPlayerConstants');
 var _ = require('lodash');
 var Firebase = require("firebase");
 
-var FIREBASE_PLAYING_URL = 'https://pirtv.firebaseio.com/playing';
+var FIREBASE_PLAYING_URL = 'https://pirtv.firebaseio.com/playing_test';
 var firebasePlayingRef = new Firebase(FIREBASE_PLAYING_URL);
 
 // Define initial data points
@@ -44,11 +44,13 @@ var emitChange = _.debounce(PlayingStore.emitChange.bind(PlayingStore), 300, {
 firebasePlayingRef.on('child_added', function(snapshot) {
   var movie = getMovieFromSnapshot(snapshot);
   _playing.push(movie);
-  // emitChange();
+  emitChange();
 });
 
 firebasePlayingRef.on("child_changed", function(childSnapshot, prevChildName) {
-  // var movie = getMovieFromSnapshot(snapshot);
+  var movie = getMovieFromSnapshot(childSnapshot);
+  _playing[0] = movie;
+  emitChange();
 });
 
 // Remove movie from playlist when it is removed from the Firebase
@@ -84,6 +86,12 @@ function getFirebaseMovie(id) {
   return new Firebase(url);
 }
 
+function playMovie(movie) {
+  if (getMovieIndex(movie) < 0) {
+    firebasePlayingRef.push(movie);
+  }
+}
+
 function pauseMovie(movie) {
   var currentMovie = _playing[0];
   var paused = currentMovie.paused || false;
@@ -110,9 +118,7 @@ AppDispatcher.register(function(payload) {
 
     // Respond to RECEIVE_DATA action
     case FluxPlayerConstants.PLAY_MOVIE:
-      if (getMovieIndex(action.data) < 0) {
-        firebasePlayingRef.push(action.data);
-      }
+      playMovie(action.data);
       break;
 
     case FluxPlayerConstants.PAUSE_MOVIE:
@@ -128,7 +134,8 @@ AppDispatcher.register(function(payload) {
   }
 
   // If action was responded to, emit change event
-  PlayingStore.emitChange();
+  // Emit change is called manually whenever some data comes from Firebase
+  // PlayingStore.emitChange();
 
   return true;
 

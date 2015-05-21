@@ -5,54 +5,28 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var app = express();
 var fs = require('fs');
+var path = require('path');
 var spawn = require('child_process').spawn;
 var omx = require('./scripts/omxcontrol.js');
 var Firebase = require("firebase");
-var webpack = require('webpack');
-var WebpackDevServer = require('webpack-dev-server');
-var config = require('./webpack.config');
 var cors = require('cors');
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(express.static(path.join(__dirname, '/')));
 app.use(cors());
 app.use(omx());
 
 var firebaseRef = new Firebase("https://pirtv.firebaseio.com/playing");
 
-// development only
-if ('production' != app.get('env')) {
-	var omx = {
-		start: function(videoId, cb) {
-			console.log('omx start ' + videoId);
-			setTimeout(function() {
-				console.log('omx finish');
-				cb();
-			}, 30000);
-		},
-		pause: function() {
-			console.log('omx pause');
-		},
-		quit: function() {
-			console.log('omx stop');
-		}
-	}
-}
+//Routes
+app.get('/', function(req, res) {
+	res.sendfile(__dirname + '/index.html');
+});
 
 app.listen(8080, function() {
 	console.log('Lenik TV is running on port ' + 8080);
 });
-
-new WebpackDevServer(webpack(config), {
-	publicPath: config.output.publicPath,
-	hot: true
-}).listen(8888, 'localhost', function (err, result) {
-	if (err) {
-		console.log(err);
-	}
-	console.log('Listening at localhost:8080');
-});
-
 
 var playlist = [],
 	nowPlaying = null,

@@ -55,7 +55,7 @@ var emitChange = _.debounce(MovieStore.emitChange.bind(MovieStore), 300, {
 });
 
 // Retrieve new movies as they are added to Firebase and add them
-// to playlist array
+// to favourites array
 firebaseFavouritesRef.on('child_added', function(snapshot) {
   var movie = {
     key: snapshot.key(),
@@ -71,7 +71,6 @@ firebaseFavouritesRef.on('child_added', function(snapshot) {
 // Register callback with AppDispatcher
 AppDispatcher.register(function(payload) {
   var action = payload.action;
-  var text;
 
   switch(action.actionType) {
 

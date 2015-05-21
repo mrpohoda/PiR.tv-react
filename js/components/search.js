@@ -9,7 +9,7 @@ let Search = React.createClass({
 	handleChange: function(event){
 		this.setState({userInput: event.target.value});
 	},
-	handleSearch: function(event){
+	handleSearch: function(){
 		var value = this.state.userInput;
 		if (value) {
 			FluxPlayerActions.searchMovies(value);
@@ -17,28 +17,33 @@ let Search = React.createClass({
 			React.findDOMNode(this.refs.searchTextInput).blur();
 		}
 	},
+	handleKeys: function(event){
+		// we want to start searching when Enter is pressed
+		if (event.keyCode === 13) {
+			this.handleSearch();
+		}
+	},
 	render: function(){
 		return (
 			<div className="large-12">
 				<div className="row collapse">
-					<form onSubmit={this.handleSearch}>
-						<div className="row">
-							<div className="row collapse">
-								<div className="small-10 columns">
-									<input
-										type="text"
-										placeholder="Search movie"
-										onChange={this.handleChange}
-										value={this.state.userInput}
-										ref="searchTextInput"
-									/>
-								</div>
-								<div className="small-2 columns">
-									<button type="submit" className="button postfix">Go</button>
-								</div>
+					<div className="row">
+						<div className="row collapse">
+							<div className="small-10 columns">
+								<input
+									type="text"
+									placeholder="Search movie"
+									onKeyUp={this.handleKeys}
+									onChange={this.handleChange}
+									value={this.state.userInput}
+									ref="searchTextInput"
+								/>
+							</div>
+							<div className="small-2 columns">
+								<button type="submit" onClick={this.handleSearch} className="button postfix">Go</button>
 							</div>
 						</div>
-					</form>
+					</div>
 				</div>
 			</div>
 		)

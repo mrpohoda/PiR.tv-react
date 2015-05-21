@@ -10,7 +10,7 @@ module.exports = {
         path: __dirname,
         filename: "js/bundle.js",
         // Path you're going to use in HTML
-        publicPath: '/js/'
+        publicPath: '/js'
     },
     plugins: [
         new webpack.HotModuleReplacementPlugin()

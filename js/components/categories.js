@@ -16,7 +16,13 @@ let Categories = React.createClass({
 				{
 					this.props.categories.map(function(category, i){
 						var disabled;// = category === selectedCategory;
-						return <li key={i} className="button small" data-category={category} onClick={disabled ? '' : this.setCategory} disabled={disabled}>{category}</li>
+						return <li
+							key={i}
+							className="button secondary tiny"
+							data-category={category}
+							onClick={disabled ? '' : this.setCategory}
+							disabled={disabled}
+						>{category}</li>
 					}.bind(this))
 				}
 				</ul>

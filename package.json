@@ -4,6 +4,7 @@
   "private": false,
   "scripts": {
     "start": "node server.js",
+    "start-dev": "node server-dev.js",
     "build": "node /home/mrpohoda/npm/lib/node_modules/webpack/bin/webpack.js --progress --profile --colors"
   },
   "dependencies": {

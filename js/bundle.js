@@ -54,7 +54,7 @@
 /******/ 	
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "63479277d3c0b8667116"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "984813ff2e9dfdf365ad"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
 /******/ 	
@@ -519,7 +519,7 @@
 /******/ 	__webpack_require__.c = installedModules;
 
 /******/ 	// __webpack_public_path__
-/******/ 	__webpack_require__.p = "/js/";
+/******/ 	__webpack_require__.p = "/js";
 
 /******/ 	// __webpack_hash__
 /******/ 	__webpack_require__.h = function() { return hotCurrentHash; };
@@ -834,7 +834,7 @@
 
 	var routes = _react2['default'].createElement(_reactRouter.Route, { name: 'app', path: '/', handler: App }, _react2['default'].createElement(_reactRouter.DefaultRoute, { handler: _componentsHomeJs2['default'] }), _react2['default'].createElement(_reactRouter.Route, { name: 'login', path: '/login', handler: LoginHandler }));
 
-	_reactRouter2['default'].run(routes, function (Handler) {
+	_reactRouter2['default'].run(routes, _reactRouter2['default'].HistoryLocation, function (Handler) {
 	  _react2['default'].render(_react2['default'].createElement(Handler, null), document.querySelector('#app'));
 	});
 	/*
@@ -2193,7 +2193,7 @@
 	});
 
 	// Retrieve new movies as they are added to Firebase and add them
-	// to playlist array
+	// to favourites array
 	firebaseFavouritesRef.on('child_added', function (snapshot) {
 	  var movie = {
 	    key: snapshot.key(),
@@ -2209,7 +2209,6 @@
 	// Register callback with AppDispatcher
 	AppDispatcher.register(function (payload) {
 	  var action = payload.action;
-	  var text;
 
 	  switch (action.actionType) {
 
@@ -2261,7 +2260,7 @@
 	var _ = __webpack_require__(114);
 	var Firebase = __webpack_require__(126);
 
-	var FIREBASE_PLAYING_URL = 'https://pirtv.firebaseio.com/playing';
+	var FIREBASE_PLAYING_URL = 'https://pirtv.firebaseio.com/playing_test';
 	var firebasePlayingRef = new Firebase(FIREBASE_PLAYING_URL);
 
 	// Define initial data points
@@ -2301,10 +2300,14 @@
 	firebasePlayingRef.on('child_added', function (snapshot) {
 	  var movie = getMovieFromSnapshot(snapshot);
 	  _playing.push(movie);
-	  // emitChange();
+	  emitChange();
 	});
 
-	firebasePlayingRef.on('child_changed', function (childSnapshot, prevChildName) {});
+	firebasePlayingRef.on('child_changed', function (childSnapshot, prevChildName) {
+	  var movie = getMovieFromSnapshot(childSnapshot);
+	  _playing[0] = movie;
+	  emitChange();
+	});
 
 	// Remove movie from playlist when it is removed from the Firebase
 	firebasePlayingRef.on('child_removed', function (snapshot) {
@@ -2339,6 +2342,12 @@
 	  return new Firebase(url);
 	}
 
+	function playMovie(movie) {
+	  if (getMovieIndex(movie) < 0) {
+	    firebasePlayingRef.push(movie);
+	  }
+	}
+
 	function pauseMovie(movie) {
 	  var currentMovie = _playing[0];
 	  var paused = currentMovie.paused || false;
@@ -2365,9 +2374,7 @@
 
 	    // Respond to RECEIVE_DATA action
 	    case FluxPlayerConstants.PLAY_MOVIE:
-	      if (getMovieIndex(action.data) < 0) {
-	        firebasePlayingRef.push(action.data);
-	      }
+	      playMovie(action.data);
 	      break;
 
 	    case FluxPlayerConstants.PAUSE_MOVIE:
@@ -2383,15 +2390,14 @@
 	  }
 
 	  // If action was responded to, emit change event
-	  PlayingStore.emitChange();
+	  // Emit change is called manually whenever some data comes from Firebase
+	  // PlayingStore.emitChange();
 
 	  return true;
 	});
 
 	exports['default'] = PlayingStore;
 	module.exports = exports['default'];
-
-	// var movie = getMovieFromSnapshot(snapshot);
 
 	/* REACT HOT LOADER */ })(); if (true) { (function () { module.hot.dispose(function (data) { data.makeHot = module.makeHot; }); if (module.exports && module.makeHot) { var makeExportsHot = __webpack_require__(6), foundReactClasses = false; if (makeExportsHot(module, __webpack_require__(13))) { foundReactClasses = true; } var shouldAcceptModule = true && foundReactClasses; if (shouldAcceptModule) { module.hot.accept(function (err) { if (err) { console.error("Cannot not apply hot update to " + "PlaylistStore.js" + ": " + err.message); } }); } } })(); }
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(7)(module)))
@@ -2482,7 +2488,7 @@
 		handleChange: function handleChange(event) {
 			this.setState({ userInput: event.target.value });
 		},
-		handleSearch: function handleSearch(event) {
+		handleSearch: function handleSearch() {
 			var value = this.state.userInput;
 			if (value) {
 				FluxPlayerActions.searchMovies(value);
@@ -2490,14 +2496,21 @@
 				_react2['default'].findDOMNode(this.refs.searchTextInput).blur();
 			}
 		},
+		handleKeys: function handleKeys(event) {
+			// we want to start searching when Enter is pressed
+			if (event.keyCode === 13) {
+				this.handleSearch();
+			}
+		},
 		render: function render() {
-			return _react2['default'].createElement('div', { className: 'large-12' }, _react2['default'].createElement('div', { className: 'row collapse' }, _react2['default'].createElement('form', { onSubmit: this.handleSearch }, _react2['default'].createElement('div', { className: 'row' }, _react2['default'].createElement('div', { className: 'row collapse' }, _react2['default'].createElement('div', { className: 'small-10 columns' }, _react2['default'].createElement('input', {
+			return _react2['default'].createElement('div', { className: 'large-12' }, _react2['default'].createElement('div', { className: 'row collapse' }, _react2['default'].createElement('div', { className: 'row' }, _react2['default'].createElement('div', { className: 'row collapse' }, _react2['default'].createElement('div', { className: 'small-10 columns' }, _react2['default'].createElement('input', {
 				type: 'text',
 				placeholder: 'Search movie',
+				onKeyUp: this.handleKeys,
 				onChange: this.handleChange,
 				value: this.state.userInput,
 				ref: 'searchTextInput'
-			})), _react2['default'].createElement('div', { className: 'small-2 columns' }, _react2['default'].createElement('button', { type: 'submit', className: 'button postfix' }, 'Go')))))));
+			})), _react2['default'].createElement('div', { className: 'small-2 columns' }, _react2['default'].createElement('button', { type: 'submit', onClick: this.handleSearch, className: 'button postfix' }, 'Go'))))));
 		}
 	});
 
@@ -2587,7 +2600,13 @@
 		render: function render() {
 			return _react2['default'].createElement('section', null, _react2['default'].createElement('ul', { className: 'inline-list' }, this.props.categories.map((function (category, i) {
 				var disabled;
-				return _react2['default'].createElement('li', { key: i, className: 'button small', 'data-category': category, onClick: disabled ? '' : this.setCategory, disabled: disabled }, category);
+				return _react2['default'].createElement('li', {
+					key: i,
+					className: 'button secondary tiny',
+					'data-category': category,
+					onClick: disabled ? '' : this.setCategory,
+					disabled: disabled
+				}, category);
 			}).bind(this))));
 		}
 	});
@@ -4741,7 +4760,7 @@
 
 	'use strict';
 
-	var ReactRef = __webpack_require__(88);
+	var ReactRef = __webpack_require__(87);
 	var ReactElementValidator = __webpack_require__(28);
 
 	/**
@@ -4868,7 +4887,7 @@
 
 	'use strict';
 
-	var ReactLifeCycle = __webpack_require__(87);
+	var ReactLifeCycle = __webpack_require__(88);
 	var ReactCurrentOwner = __webpack_require__(26);
 	var ReactElement = __webpack_require__(27);
 	var ReactInstanceMap = __webpack_require__(31);
@@ -6805,7 +6824,7 @@
 	var _inherits = function (subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
 
 	var React = __webpack_require__(13);
-	var ContextWrapper = __webpack_require__(117);
+	var ContextWrapper = __webpack_require__(116);
 	var assign = __webpack_require__(77);
 	var PropTypes = __webpack_require__(115);
 
@@ -6911,7 +6930,7 @@
 
 	'use strict';
 
-	var LocationActions = __webpack_require__(116);
+	var LocationActions = __webpack_require__(117);
 	var History = __webpack_require__(62);
 
 	var _listeners = [];
@@ -7027,7 +7046,7 @@
 
 	'use strict';
 
-	var LocationActions = __webpack_require__(116);
+	var LocationActions = __webpack_require__(117);
 	var History = __webpack_require__(62);
 
 	var _listeners = [];
@@ -7213,7 +7232,7 @@
 	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 	var invariant = __webpack_require__(41);
-	var LocationActions = __webpack_require__(116);
+	var LocationActions = __webpack_require__(117);
 	var History = __webpack_require__(62);
 
 	/**
@@ -7307,7 +7326,7 @@
 
 	'use strict';
 
-	var LocationActions = __webpack_require__(116);
+	var LocationActions = __webpack_require__(117);
 
 	/**
 	 * A scroll behavior that attempts to imitate the default behavior
@@ -7846,7 +7865,7 @@
 	var warning = __webpack_require__(44);
 	var invariant = __webpack_require__(41);
 	var canUseDOM = __webpack_require__(94).canUseDOM;
-	var LocationActions = __webpack_require__(116);
+	var LocationActions = __webpack_require__(117);
 	var ImitateBrowserBehavior = __webpack_require__(60);
 	var HashLocation = __webpack_require__(55);
 	var HistoryLocation = __webpack_require__(56);
@@ -9941,47 +9960,6 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
-	 * Copyright 2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule ReactLifeCycle
-	 */
-
-	'use strict';
-
-	/**
-	 * This module manages the bookkeeping when a component is in the process
-	 * of being mounted or being unmounted. This is used as a way to enforce
-	 * invariants (or warnings) when it is not recommended to call
-	 * setState/forceUpdate.
-	 *
-	 * currentlyMountingInstance: During the construction phase, it is not possible
-	 * to trigger an update since the instance is not fully mounted yet. However, we
-	 * currently allow this as a convenience for mutating the initial state.
-	 *
-	 * currentlyUnmountingInstance: During the unmounting phase, the instance is
-	 * still mounted and can therefore schedule an update. However, this is not
-	 * recommended and probably an error since it's about to be unmounted.
-	 * Therefore we still want to trigger in an error for that case.
-	 */
-
-	var ReactLifeCycle = {
-	  currentlyMountingInstance: null,
-	  currentlyUnmountingInstance: null
-	};
-
-	module.exports = ReactLifeCycle;
-
-
-/***/ },
-/* 88 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
 	 * Copyright 2013-2015, Facebook, Inc.
 	 * All rights reserved.
 	 *
@@ -10050,6 +10028,47 @@
 	};
 
 	module.exports = ReactRef;
+
+
+/***/ },
+/* 88 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright 2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule ReactLifeCycle
+	 */
+
+	'use strict';
+
+	/**
+	 * This module manages the bookkeeping when a component is in the process
+	 * of being mounted or being unmounted. This is used as a way to enforce
+	 * invariants (or warnings) when it is not recommended to call
+	 * setState/forceUpdate.
+	 *
+	 * currentlyMountingInstance: During the construction phase, it is not possible
+	 * to trigger an update since the instance is not fully mounted yet. However, we
+	 * currently allow this as a convenience for mutating the initial state.
+	 *
+	 * currentlyUnmountingInstance: During the unmounting phase, the instance is
+	 * still mounted and can therefore schedule an update. However, this is not
+	 * recommended and probably an error since it's about to be unmounted.
+	 * Therefore we still want to trigger in an error for that case.
+	 */
+
+	var ReactLifeCycle = {
+	  currentlyMountingInstance: null,
+	  currentlyUnmountingInstance: null
+	};
+
+	module.exports = ReactLifeCycle;
 
 
 /***/ },
@@ -10570,7 +10589,7 @@
 	var ReactElement = __webpack_require__(27);
 	var ReactElementValidator = __webpack_require__(28);
 	var ReactInstanceMap = __webpack_require__(31);
-	var ReactLifeCycle = __webpack_require__(87);
+	var ReactLifeCycle = __webpack_require__(88);
 	var ReactNativeComponent = __webpack_require__(83);
 	var ReactPerf = __webpack_require__(33);
 	var ReactPropTypeLocations = __webpack_require__(81);
@@ -11652,7 +11671,7 @@
 	 * Module dependencies.
 	 */
 
-	var parseuri = __webpack_require__(177);
+	var parseuri = __webpack_require__(178);
 	var debug = __webpack_require__(137)('socket.io-client:url');
 
 	/**
@@ -11733,7 +11752,7 @@
 	 */
 
 	var url = __webpack_require__(99);
-	var eio = __webpack_require__(178);
+	var eio = __webpack_require__(177);
 	var Socket = __webpack_require__(101);
 	var Emitter = __webpack_require__(179);
 	var parser = __webpack_require__(128);
@@ -13164,7 +13183,7 @@
 	var ReactElement = __webpack_require__(27);
 	var ReactErrorUtils = __webpack_require__(140);
 	var ReactInstanceMap = __webpack_require__(31);
-	var ReactLifeCycle = __webpack_require__(87);
+	var ReactLifeCycle = __webpack_require__(88);
 	var ReactPropTypeLocations = __webpack_require__(81);
 	var ReactPropTypeLocationNames = __webpack_require__(82);
 	var ReactUpdateQueue = __webpack_require__(35);
@@ -27668,36 +27687,6 @@
 /* 116 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/**
-	 * Actions that modify the URL.
-	 */
-	'use strict';
-
-	var LocationActions = {
-
-	  /**
-	   * Indicates a new location is being pushed to the history stack.
-	   */
-	  PUSH: 'push',
-
-	  /**
-	   * Indicates the current location should be replaced.
-	   */
-	  REPLACE: 'replace',
-
-	  /**
-	   * Indicates the most recent entry should be removed from the history stack.
-	   */
-	  POP: 'pop'
-
-	};
-
-	module.exports = LocationActions;
-
-/***/ },
-/* 117 */
-/***/ function(module, exports, __webpack_require__) {
-
 	'use strict';
 
 	var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
@@ -27736,6 +27725,36 @@
 	})(React.Component);
 
 	module.exports = ContextWrapper;
+
+/***/ },
+/* 117 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Actions that modify the URL.
+	 */
+	'use strict';
+
+	var LocationActions = {
+
+	  /**
+	   * Indicates a new location is being pushed to the history stack.
+	   */
+	  PUSH: 'push',
+
+	  /**
+	   * Indicates the current location should be replaced.
+	   */
+	  REPLACE: 'replace',
+
+	  /**
+	   * Indicates the most recent entry should be removed from the history stack.
+	   */
+	  POP: 'pop'
+
+	};
+
+	module.exports = LocationActions;
 
 /***/ },
 /* 118 */
@@ -34791,6 +34810,14 @@
 /* 177 */
 /***/ function(module, exports, __webpack_require__) {
 
+	
+	module.exports =  __webpack_require__(226);
+
+
+/***/ },
+/* 178 */
+/***/ function(module, exports, __webpack_require__) {
+
 	/**
 	 * Parses an URI
 	 *
@@ -34816,14 +34843,6 @@
 
 	  return uri;
 	};
-
-
-/***/ },
-/* 178 */
-/***/ function(module, exports, __webpack_require__) {
-
-	
-	module.exports =  __webpack_require__(226);
 
 
 /***/ },
@@ -40726,7 +40745,7 @@
 
 	  // Detect the `define` function exposed by asynchronous module loaders. The
 	  // strict `define` check is necessary for compatibility with `r.js`.
-	  var isLoader = "function" === "function" && __webpack_require__(248);
+	  var isLoader = "function" === "function" && __webpack_require__(247);
 
 	  // Detect native implementations.
 	  var nativeJSON = typeof JSON == "object" && JSON;
@@ -41587,7 +41606,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	
-	module.exports = __webpack_require__(247);
+	module.exports = __webpack_require__(248);
 
 	/**
 	 * Exports parser
@@ -41595,7 +41614,7 @@
 	 * @api public
 	 *
 	 */
-	module.exports.parser = __webpack_require__(259);
+	module.exports.parser = __webpack_require__(258);
 
 
 /***/ },
@@ -42995,6 +43014,14 @@
 /* 247 */
 /***/ function(module, exports, __webpack_require__) {
 
+	/* WEBPACK VAR INJECTION */(function(__webpack_amd_options__) {module.exports = __webpack_amd_options__;
+
+	/* WEBPACK VAR INJECTION */}.call(exports, {}))
+
+/***/ },
+/* 248 */
+/***/ function(module, exports, __webpack_require__) {
+
 	/* WEBPACK VAR INJECTION */(function(global) {/**
 	 * Module dependencies.
 	 */
@@ -43003,7 +43030,7 @@
 	var Emitter = __webpack_require__(179);
 	var debug = __webpack_require__(266)('engine.io-client:socket');
 	var index = __webpack_require__(182);
-	var parser = __webpack_require__(259);
+	var parser = __webpack_require__(258);
 	var parseuri = __webpack_require__(263);
 	var parsejson = __webpack_require__(264);
 	var parseqs = __webpack_require__(265);
@@ -43121,9 +43148,9 @@
 	 */
 
 	Socket.Socket = Socket;
-	Socket.Transport = __webpack_require__(258);
+	Socket.Transport = __webpack_require__(259);
 	Socket.transports = __webpack_require__(260);
-	Socket.parser = __webpack_require__(259);
+	Socket.parser = __webpack_require__(258);
 
 	/**
 	 * Creates transport of the given type.
@@ -43702,14 +43729,6 @@
 	};
 
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
-
-/***/ },
-/* 248 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(__webpack_amd_options__) {module.exports = __webpack_amd_options__;
-
-	/* WEBPACK VAR INJECTION */}.call(exports, {}))
 
 /***/ },
 /* 249 */
@@ -44493,171 +44512,6 @@
 /* 258 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/**
-	 * Module dependencies.
-	 */
-
-	var parser = __webpack_require__(259);
-	var Emitter = __webpack_require__(179);
-
-	/**
-	 * Module exports.
-	 */
-
-	module.exports = Transport;
-
-	/**
-	 * Transport abstract constructor.
-	 *
-	 * @param {Object} options.
-	 * @api private
-	 */
-
-	function Transport (opts) {
-	  this.path = opts.path;
-	  this.hostname = opts.hostname;
-	  this.port = opts.port;
-	  this.secure = opts.secure;
-	  this.query = opts.query;
-	  this.timestampParam = opts.timestampParam;
-	  this.timestampRequests = opts.timestampRequests;
-	  this.readyState = '';
-	  this.agent = opts.agent || false;
-	  this.socket = opts.socket;
-	  this.enablesXDR = opts.enablesXDR;
-
-	  // SSL options for Node.js client
-	  this.pfx = opts.pfx;
-	  this.key = opts.key;
-	  this.passphrase = opts.passphrase;
-	  this.cert = opts.cert;
-	  this.ca = opts.ca;
-	  this.ciphers = opts.ciphers;
-	  this.rejectUnauthorized = opts.rejectUnauthorized;
-	}
-
-	/**
-	 * Mix in `Emitter`.
-	 */
-
-	Emitter(Transport.prototype);
-
-	/**
-	 * A counter used to prevent collisions in the timestamps used
-	 * for cache busting.
-	 */
-
-	Transport.timestamps = 0;
-
-	/**
-	 * Emits an error.
-	 *
-	 * @param {String} str
-	 * @return {Transport} for chaining
-	 * @api public
-	 */
-
-	Transport.prototype.onError = function (msg, desc) {
-	  var err = new Error(msg);
-	  err.type = 'TransportError';
-	  err.description = desc;
-	  this.emit('error', err);
-	  return this;
-	};
-
-	/**
-	 * Opens the transport.
-	 *
-	 * @api public
-	 */
-
-	Transport.prototype.open = function () {
-	  if ('closed' == this.readyState || '' == this.readyState) {
-	    this.readyState = 'opening';
-	    this.doOpen();
-	  }
-
-	  return this;
-	};
-
-	/**
-	 * Closes the transport.
-	 *
-	 * @api private
-	 */
-
-	Transport.prototype.close = function () {
-	  if ('opening' == this.readyState || 'open' == this.readyState) {
-	    this.doClose();
-	    this.onClose();
-	  }
-
-	  return this;
-	};
-
-	/**
-	 * Sends multiple packets.
-	 *
-	 * @param {Array} packets
-	 * @api private
-	 */
-
-	Transport.prototype.send = function(packets){
-	  if ('open' == this.readyState) {
-	    this.write(packets);
-	  } else {
-	    throw new Error('Transport not open');
-	  }
-	};
-
-	/**
-	 * Called upon open
-	 *
-	 * @api private
-	 */
-
-	Transport.prototype.onOpen = function () {
-	  this.readyState = 'open';
-	  this.writable = true;
-	  this.emit('open');
-	};
-
-	/**
-	 * Called with data.
-	 *
-	 * @param {String} data
-	 * @api private
-	 */
-
-	Transport.prototype.onData = function(data){
-	  var packet = parser.decodePacket(data, this.socket.binaryType);
-	  this.onPacket(packet);
-	};
-
-	/**
-	 * Called with a decoded packet.
-	 */
-
-	Transport.prototype.onPacket = function (packet) {
-	  this.emit('packet', packet);
-	};
-
-	/**
-	 * Called upon close.
-	 *
-	 * @api private
-	 */
-
-	Transport.prototype.onClose = function () {
-	  this.readyState = 'closed';
-	  this.emit('close');
-	};
-
-
-/***/ },
-/* 259 */
-/***/ function(module, exports, __webpack_require__) {
-
 	/* WEBPACK VAR INJECTION */(function(global) {/**
 	 * Module dependencies.
 	 */
@@ -45254,6 +45108,171 @@
 	};
 
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
+
+/***/ },
+/* 259 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Module dependencies.
+	 */
+
+	var parser = __webpack_require__(258);
+	var Emitter = __webpack_require__(179);
+
+	/**
+	 * Module exports.
+	 */
+
+	module.exports = Transport;
+
+	/**
+	 * Transport abstract constructor.
+	 *
+	 * @param {Object} options.
+	 * @api private
+	 */
+
+	function Transport (opts) {
+	  this.path = opts.path;
+	  this.hostname = opts.hostname;
+	  this.port = opts.port;
+	  this.secure = opts.secure;
+	  this.query = opts.query;
+	  this.timestampParam = opts.timestampParam;
+	  this.timestampRequests = opts.timestampRequests;
+	  this.readyState = '';
+	  this.agent = opts.agent || false;
+	  this.socket = opts.socket;
+	  this.enablesXDR = opts.enablesXDR;
+
+	  // SSL options for Node.js client
+	  this.pfx = opts.pfx;
+	  this.key = opts.key;
+	  this.passphrase = opts.passphrase;
+	  this.cert = opts.cert;
+	  this.ca = opts.ca;
+	  this.ciphers = opts.ciphers;
+	  this.rejectUnauthorized = opts.rejectUnauthorized;
+	}
+
+	/**
+	 * Mix in `Emitter`.
+	 */
+
+	Emitter(Transport.prototype);
+
+	/**
+	 * A counter used to prevent collisions in the timestamps used
+	 * for cache busting.
+	 */
+
+	Transport.timestamps = 0;
+
+	/**
+	 * Emits an error.
+	 *
+	 * @param {String} str
+	 * @return {Transport} for chaining
+	 * @api public
+	 */
+
+	Transport.prototype.onError = function (msg, desc) {
+	  var err = new Error(msg);
+	  err.type = 'TransportError';
+	  err.description = desc;
+	  this.emit('error', err);
+	  return this;
+	};
+
+	/**
+	 * Opens the transport.
+	 *
+	 * @api public
+	 */
+
+	Transport.prototype.open = function () {
+	  if ('closed' == this.readyState || '' == this.readyState) {
+	    this.readyState = 'opening';
+	    this.doOpen();
+	  }
+
+	  return this;
+	};
+
+	/**
+	 * Closes the transport.
+	 *
+	 * @api private
+	 */
+
+	Transport.prototype.close = function () {
+	  if ('opening' == this.readyState || 'open' == this.readyState) {
+	    this.doClose();
+	    this.onClose();
+	  }
+
+	  return this;
+	};
+
+	/**
+	 * Sends multiple packets.
+	 *
+	 * @param {Array} packets
+	 * @api private
+	 */
+
+	Transport.prototype.send = function(packets){
+	  if ('open' == this.readyState) {
+	    this.write(packets);
+	  } else {
+	    throw new Error('Transport not open');
+	  }
+	};
+
+	/**
+	 * Called upon open
+	 *
+	 * @api private
+	 */
+
+	Transport.prototype.onOpen = function () {
+	  this.readyState = 'open';
+	  this.writable = true;
+	  this.emit('open');
+	};
+
+	/**
+	 * Called with data.
+	 *
+	 * @param {String} data
+	 * @api private
+	 */
+
+	Transport.prototype.onData = function(data){
+	  var packet = parser.decodePacket(data, this.socket.binaryType);
+	  this.onPacket(packet);
+	};
+
+	/**
+	 * Called with a decoded packet.
+	 */
+
+	Transport.prototype.onPacket = function (packet) {
+	  this.emit('packet', packet);
+	};
+
+	/**
+	 * Called upon close.
+	 *
+	 * @api private
+	 */
+
+	Transport.prototype.onClose = function () {
+	  this.readyState = 'closed';
+	  this.emit('close');
+	};
+
 
 /***/ },
 /* 260 */
@@ -46528,8 +46547,8 @@
 	 * Module dependencies.
 	 */
 
-	var Transport = __webpack_require__(258);
-	var parser = __webpack_require__(259);
+	var Transport = __webpack_require__(259);
+	var parser = __webpack_require__(258);
 	var parseqs = __webpack_require__(265);
 	var inherit = __webpack_require__(282);
 	var debug = __webpack_require__(266)('engine.io-client:websocket');
@@ -47549,9 +47568,9 @@
 	 * Module dependencies.
 	 */
 
-	var Transport = __webpack_require__(258);
+	var Transport = __webpack_require__(259);
 	var parseqs = __webpack_require__(265);
-	var parser = __webpack_require__(259);
+	var parser = __webpack_require__(258);
 	var inherit = __webpack_require__(282);
 	var debug = __webpack_require__(266)('engine.io-client:polling');
 
