@@ -4,7 +4,7 @@ var FluxPlayerConstants = require('../constants/FluxPlayerConstants');
 var _ = require('lodash');
 var Firebase = require("firebase");
 
-var FIREBASE_PLAYING_URL = 'https://pirtv.firebaseio.com/playing_test';
+var FIREBASE_PLAYING_URL = 'https://pirtv.firebaseio.com/playing';
 var firebasePlayingRef = new Firebase(FIREBASE_PLAYING_URL);
 
 // Define initial data points
