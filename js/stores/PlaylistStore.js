@@ -87,9 +87,7 @@ function getFirebaseMovie(id) {
 }
 
 function playMovie(movie) {
-  if (getMovieIndex(movie) < 0) {
-    firebasePlayingRef.push(movie);
-  }
+  firebasePlayingRef.push(movie);
 }
 
 function pauseMovie(movie) {

@@ -3,7 +3,7 @@
   "version": "0.0.2",
   "private": false,
   "scripts": {
-    "start": "node server.js",
+    "start": "NODE_ENV=production node server.js",
     "start-dev": "node server-dev.js",
     "build": "node /home/mrpohoda/npm/lib/node_modules/webpack/bin/webpack.js --progress --profile --colors"
   },

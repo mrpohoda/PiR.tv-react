@@ -13,16 +13,24 @@ var cors = require('cors');
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
-app.use(express.static(path.join(__dirname, '/')));
 app.use(cors());
 app.use(omx());
 
+console.log('ENV: ', app.get('env'));
+if (app.get('env') === 'production') {
+	app.use(express.static(path.join(__dirname, '/')));
+	//Routes
+	app.get('/', function(req, res) {
+		res.sendfile(__dirname + '/index.html');
+	});
+}
+else {
+	// include webpack-dev-server
+	eval(fs.readFileSync('server-dev.js')+'');
+}
+
 var firebaseRef = new Firebase("https://pirtv.firebaseio.com/playing");
 
-//Routes
-app.get('/', function(req, res) {
-	res.sendfile(__dirname + '/index.html');
-});
 
 app.listen(8080, function() {
 	console.log('Lenik TV is running on port ' + 8080);

@@ -1,7 +1,6 @@
 /**
  * Module dependencies.
  */
-var fs = require('fs');
 var webpack = require('webpack');
 var WebpackDevServer = require('webpack-dev-server');
 var config = require('./webpack.config');
@@ -31,6 +30,3 @@ var omx = {
 		console.log('omx stop');
 	}
 }
-
-// file is included here:
-eval(fs.readFileSync('server.js')+'');
