@@ -6,6 +6,10 @@ var getBaseUrl = function () {
   return 'https://www.googleapis.com/youtube/v3/search?key=' + YOUTUBE_API_KEY + '&part=snippet&maxResults=' + YOUTUBE_RESULT_LIMIT;
 };
 
+// this is used for remembering which query was used
+// we can then handle infinite scrolling using pageToken
+let lastUsedQuery, nextPageToken;
+
 function transformYoutubeData (movies) {
     var items = [],
       entry;
@@ -22,15 +26,30 @@ function transformYoutubeData (movies) {
         // duration: entry.media$group.yt$duration.seconds
       });
     }
+
+    // remember nextPageToken for infinite scrolling
+    nextPageToken = movies.nextPageToken;
+
     return items;
-  }
+}
 
 let YoutubeApi = {
 
   findMovies: function(params) {
+    var url = getBaseUrl();
+    if (params.nextPage) {
+      params.query = lastUsedQuery;
+      url += '&pageToken=' + nextPageToken;
+    }
+    else {
+      lastUsedQuery = params.query;
+    }
+
+    url += '&q=' + escape(params.query);
+
     var deferred = Q.defer();
     var request = new XMLHttpRequest();
-    request.open('GET', getBaseUrl() + '&q=' + escape(params.query), true);
+    request.open('GET', url, true);
 
     request.onload = function() {
       if (this.status >= 200 && this.status < 400) {

@@ -9,7 +9,8 @@ var firebaseFavouritesRef = new Firebase("https://pirtv.firebaseio.com/favourite
 // Define initial data points
 var _favouriteMovies = [],
   _movies = [],
-  _categories = [];
+  _categories = [],
+  _selectedCategory;
 
 
 function updateCategories(movie) {
@@ -30,6 +31,10 @@ let MovieStore = _.extend({}, EventEmitter.prototype, {
 
   getCategories: function() {
     return _categories;
+  },
+
+  getSelectedCategory: function() {
+    return _selectedCategory;
   },
 
   // Emit Change event
@@ -75,6 +80,8 @@ AppDispatcher.register(function(payload) {
   switch(action.actionType) {
 
     case FluxPlayerConstants.SEARCH_MOVIES:
+      _selectedCategory = null;
+
       _movies = action.data.map(function(movie){
         return {
           key: movie.id,
@@ -84,9 +91,21 @@ AppDispatcher.register(function(payload) {
       break;
 
     case FluxPlayerConstants.GET_MOVIES_BY_CATEGORY:
+      _selectedCategory = action.data;
+
       _movies = _favouriteMovies.filter(function(movie){
-        return movie.movie.category === action.data;
+        return movie.movie.category === _selectedCategory;
       });
+      break;
+
+    case FluxPlayerConstants.SHOW_NEXT_PAGE_MOVIES:
+      var addedMovies = action.data.map(function(movie){
+        return {
+          key: movie.id,
+          movie: movie
+        }
+      });
+      _movies = _movies.concat(addedMovies);
       break;
 
     default:

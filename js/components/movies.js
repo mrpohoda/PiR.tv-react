@@ -7,6 +7,19 @@ let Favourites = React.createClass({
 	onPlayHandler: function(movie){
 		FluxPlayerActions.playMovie(movie);
 	},
+	handleScroll: function() {
+		if (!this.props.category) {
+			if (document.body.scrollHeight === document.body.scrollTop + window.innerHeight) {
+				FluxPlayerActions.showNextPageMovies();
+			}
+		}
+	},
+	componentDidMount: function() {
+		window.addEventListener('scroll', this.handleScroll);
+	},
+	componentWillUnmount: function() {
+		window.removeEventListener('scroll', this.handleScroll);
+	},
 	render: function(){
 
 		return (

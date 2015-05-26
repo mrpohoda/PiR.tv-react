@@ -12,8 +12,11 @@ let Search = React.createClass({
 	handleSearch: function(){
 		var value = this.state.userInput;
 		if (value) {
+			// perform youtube search
 			FluxPlayerActions.searchMovies(value);
+			// clear input
 			this.setState({userInput: ''});
+			// this removes focus and also hides keyboard on mobile devices
 			React.findDOMNode(this.refs.searchTextInput).blur();
 		}
 	},

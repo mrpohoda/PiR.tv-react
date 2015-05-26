@@ -13,6 +13,7 @@ function getMoviesState() {
 	return {
 		movies: MovieStore.getMovies(),
 		categories: MovieStore.getCategories(),
+		selectedCategory: MovieStore.getSelectedCategory(),
 		playing: PlaylistStore.getPlaying()
 	};
 }
@@ -49,8 +50,8 @@ let Home = React.createClass({
 				</div>
 				<div className="grid-block">
 					<div className="grid-content">
-						<Categories categories={this.state.categories} />
-						<Movies movies={this.state.movies} />
+						<Categories categories={this.state.categories} category={this.state.selectedCategory} />
+						<Movies movies={this.state.movies} category={this.state.selectedCategory} />
 					</div>
 				</div>
 			</div>

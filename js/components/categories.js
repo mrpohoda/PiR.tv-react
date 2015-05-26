@@ -2,12 +2,9 @@ import React from 'react';
 
 var FluxPlayerActions = require('../actions/FluxPlayerActions');
 
-var selectedCategory;
-
 let Categories = React.createClass({
 	setCategory: function(event){
-		selectedCategory = event.target.dataset['category'];
-		FluxPlayerActions.getMoviesByCategory(selectedCategory);
+		FluxPlayerActions.getMoviesByCategory(event.target.dataset['category']);
 	},
 	render: function(){
 		return (
@@ -15,7 +12,7 @@ let Categories = React.createClass({
 				<ul className="inline-list">
 				{
 					this.props.categories.map(function(category, i){
-						var disabled;// = category === selectedCategory;
+						var disabled = category === this.props.category;
 						return <li
 							key={i}
 							className="button secondary tiny"

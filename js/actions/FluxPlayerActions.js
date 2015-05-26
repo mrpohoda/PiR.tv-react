@@ -37,6 +37,17 @@ let FluxPlayerActions = {
     });
   },
 
+  showNextPageMovies: function() {
+    YoutubeApi.findMovies({query: null, nextPage: true}).then(function(movies){
+      AppDispatcher.handleAction({
+        actionType: FluxPlayerConstants.SHOW_NEXT_PAGE_MOVIES,
+        data: movies
+      });
+    }, function(reason){
+      alert('Chyba z nedbalosti a nepozornosti :-(');
+    });
+  },
+
   getMoviesByCategory: function(data) {
     AppDispatcher.handleAction({
       actionType: FluxPlayerConstants.GET_MOVIES_BY_CATEGORY,
