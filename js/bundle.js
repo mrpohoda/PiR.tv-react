@@ -54,7 +54,7 @@
 /******/ 	
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "560df7f931dacdad5027"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "1e1999523c49c42b74f1"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
 /******/ 	
@@ -704,6 +704,7 @@
 		return {
 			movies: _storesMovieStoreJs2['default'].getMovies(),
 			categories: _storesMovieStoreJs2['default'].getCategories(),
+			selectedCategory: _storesMovieStoreJs2['default'].getSelectedCategory(),
 			playing: _storesPlaylistStoreJs2['default'].getPlaying()
 		};
 	}
@@ -728,7 +729,7 @@
 		},
 
 		render: function render() {
-			return _react2['default'].createElement('div', { className: 'grid-container' }, _react2['default'].createElement('div', { className: 'grid-block' }, _react2['default'].createElement('div', { className: 'grid-content' }, _react2['default'].createElement(_playingJs2['default'], { playing: this.state.playing }))), _react2['default'].createElement('div', { className: 'grid-block' }, _react2['default'].createElement('div', { className: 'grid-content' }, _react2['default'].createElement(_searchJs2['default'], null))), _react2['default'].createElement('div', { className: 'grid-block' }, _react2['default'].createElement('div', { className: 'grid-content' }, _react2['default'].createElement(_categoriesJs2['default'], { categories: this.state.categories }), _react2['default'].createElement(_moviesJs2['default'], { movies: this.state.movies }))));
+			return _react2['default'].createElement('div', { className: 'grid-container' }, _react2['default'].createElement('div', { className: 'grid-block' }, _react2['default'].createElement('div', { className: 'grid-content' }, _react2['default'].createElement(_playingJs2['default'], { playing: this.state.playing }))), _react2['default'].createElement('div', { className: 'grid-block' }, _react2['default'].createElement('div', { className: 'grid-content' }, _react2['default'].createElement(_searchJs2['default'], null))), _react2['default'].createElement('div', { className: 'grid-block' }, _react2['default'].createElement('div', { className: 'grid-content' }, _react2['default'].createElement(_categoriesJs2['default'], { categories: this.state.categories, category: this.state.selectedCategory }), _react2['default'].createElement(_moviesJs2['default'], { movies: this.state.movies, category: this.state.selectedCategory }))));
 		},
 
 		// Method to setState based upon Store changes
@@ -1805,7 +1806,8 @@
 	// Define initial data points
 	var _favouriteMovies = [],
 	    _movies = [],
-	    _categories = [];
+	    _categories = [],
+	    _selectedCategory;
 
 	function updateCategories(movie) {
 	  if (!movie.category) {
@@ -1825,6 +1827,10 @@
 
 	  getCategories: function getCategories() {
 	    return _categories;
+	  },
+
+	  getSelectedCategory: function getSelectedCategory() {
+	    return _selectedCategory;
 	  },
 
 	  // Emit Change event
@@ -1870,6 +1876,8 @@
 	  switch (action.actionType) {
 
 	    case FluxPlayerConstants.SEARCH_MOVIES:
+	      _selectedCategory = null;
+
 	      _movies = action.data.map(function (movie) {
 	        return {
 	          key: movie.id,
@@ -1879,9 +1887,21 @@
 	      break;
 
 	    case FluxPlayerConstants.GET_MOVIES_BY_CATEGORY:
+	      _selectedCategory = action.data;
+
 	      _movies = _favouriteMovies.filter(function (movie) {
-	        return movie.movie.category === action.data;
+	        return movie.movie.category === _selectedCategory;
 	      });
+	      break;
+
+	    case FluxPlayerConstants.SHOW_NEXT_PAGE_MOVIES:
+	      var addedMovies = action.data.map(function (movie) {
+	        return {
+	          key: movie.id,
+	          movie: movie
+	        };
+	      });
+	      _movies = _movies.concat(addedMovies);
 	      break;
 
 	    default:
@@ -2146,8 +2166,11 @@
 		handleSearch: function handleSearch() {
 			var value = this.state.userInput;
 			if (value) {
+				// perform youtube search
 				FluxPlayerActions.searchMovies(value);
+				// clear input
 				this.setState({ userInput: '' });
+				// this removes focus and also hides keyboard on mobile devices
 				_react2['default'].findDOMNode(this.refs.searchTextInput).blur();
 			}
 		},
@@ -2207,6 +2230,19 @@
 		onPlayHandler: function onPlayHandler(movie) {
 			FluxPlayerActions.playMovie(movie);
 		},
+		handleScroll: function handleScroll() {
+			if (!this.props.category) {
+				if (document.body.scrollHeight === document.body.scrollTop + window.innerHeight) {
+					FluxPlayerActions.showNextPageMovies();
+				}
+			}
+		},
+		componentDidMount: function componentDidMount() {
+			window.addEventListener('scroll', this.handleScroll);
+		},
+		componentWillUnmount: function componentWillUnmount() {
+			window.removeEventListener('scroll', this.handleScroll);
+		},
 		render: function render() {
 
 			return _react2['default'].createElement('section', { className: 'block-list' }, _react2['default'].createElement('ul', null, this.props.movies.map((function (movie) {
@@ -2243,18 +2279,15 @@
 
 	var FluxPlayerActions = __webpack_require__(63);
 
-	var selectedCategory;
-
 	var Categories = _react2['default'].createClass({
 		displayName: 'Categories',
 
 		setCategory: function setCategory(event) {
-			selectedCategory = event.target.dataset['category'];
-			FluxPlayerActions.getMoviesByCategory(selectedCategory);
+			FluxPlayerActions.getMoviesByCategory(event.target.dataset['category']);
 		},
 		render: function render() {
 			return _react2['default'].createElement('section', null, _react2['default'].createElement('ul', { className: 'inline-list' }, this.props.categories.map((function (category, i) {
-				var disabled;
+				var disabled = category === this.props.category;
 				return _react2['default'].createElement('li', {
 					key: i,
 					className: 'button secondary tiny',
@@ -2268,7 +2301,6 @@
 
 	exports['default'] = Categories;
 	module.exports = exports['default'];
-	// = category === selectedCategory;
 
 	/* REACT HOT LOADER */ })(); if (true) { (function () { module.hot.dispose(function (data) { data.makeHot = module.makeHot; }); if (module.exports && module.makeHot) { var makeExportsHot = __webpack_require__(3), foundReactClasses = false; if (makeExportsHot(module, __webpack_require__(8))) { foundReactClasses = true; } var shouldAcceptModule = true && foundReactClasses; if (shouldAcceptModule) { module.hot.accept(function (err) { if (err) { console.error("Cannot not apply hot update to " + "categories.js" + ": " + err.message); } }); } } })(); }
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(7)(module)))
@@ -8041,6 +8073,17 @@
 	    });
 	  },
 
+	  showNextPageMovies: function showNextPageMovies() {
+	    YoutubeApi.findMovies({ query: null, nextPage: true }).then(function (movies) {
+	      AppDispatcher.handleAction({
+	        actionType: FluxPlayerConstants.SHOW_NEXT_PAGE_MOVIES,
+	        data: movies
+	      });
+	    }, function (reason) {
+	      alert('Chyba z nedbalosti a nepozornosti :-(');
+	    });
+	  },
+
 	  getMoviesByCategory: function getMoviesByCategory(data) {
 	    AppDispatcher.handleAction({
 	      actionType: FluxPlayerConstants.GET_MOVIES_BY_CATEGORY,
@@ -8116,7 +8159,7 @@
 
 	'use strict';
 
-	var keyMirror = __webpack_require__(120);
+	var keyMirror = __webpack_require__(118);
 
 	var PropagationPhases = keyMirror({bubbled: null, captured: null});
 
@@ -8195,8 +8238,8 @@
 	var EventPluginRegistry = __webpack_require__(67);
 	var EventPluginUtils = __webpack_require__(92);
 
-	var accumulateInto = __webpack_require__(118);
-	var forEachAccumulated = __webpack_require__(119);
+	var accumulateInto = __webpack_require__(119);
+	var forEachAccumulated = __webpack_require__(120);
 	var invariant = __webpack_require__(36);
 
 	/**
@@ -9234,7 +9277,7 @@
 
 	'use strict';
 
-	var keyMirror = __webpack_require__(120);
+	var keyMirror = __webpack_require__(118);
 
 	var ReactPropTypeLocations = keyMirror({
 	  prop: null,
@@ -11146,7 +11189,7 @@
 	Object.defineProperty(exports, '__esModule', {
 	  value: true
 	});
-	var keyMirror = __webpack_require__(120);
+	var keyMirror = __webpack_require__(118);
 
 	// Define action constants
 	exports['default'] = keyMirror({
@@ -11154,7 +11197,8 @@
 	  PAUSE_MOVIE: null,
 	  STOP_MOVIE: null,
 	  SEARCH_MOVIES: null, // search movies on yutube
-	  GET_MOVIES_BY_CATEGORY: null // return stored movies with given category
+	  GET_MOVIES_BY_CATEGORY: null, // return stored movies with given category
+	  SHOW_NEXT_PAGE_MOVIES: null
 	});
 	module.exports = exports['default'];
 
@@ -11762,7 +11806,7 @@
 
 	var assign = __webpack_require__(70);
 	var invariant = __webpack_require__(36);
-	var keyMirror = __webpack_require__(120);
+	var keyMirror = __webpack_require__(118);
 	var keyOf = __webpack_require__(128);
 	var warning = __webpack_require__(39);
 
@@ -27115,6 +27159,11 @@
 	  return 'https://www.googleapis.com/youtube/v3/search?key=' + YOUTUBE_API_KEY + '&part=snippet&maxResults=' + YOUTUBE_RESULT_LIMIT;
 	};
 
+	// this is used for remembering which query was used
+	// we can then handle infinite scrolling using pageToken
+	var lastUsedQuery = undefined,
+	    nextPageToken = undefined;
+
 	function transformYoutubeData(movies) {
 	  var items = [],
 	      entry;
@@ -27131,15 +27180,29 @@
 	      // duration: entry.media$group.yt$duration.seconds
 	    });
 	  }
+
+	  // remember nextPageToken for infinite scrolling
+	  nextPageToken = movies.nextPageToken;
+
 	  return items;
 	}
 
 	var YoutubeApi = {
 
 	  findMovies: function findMovies(params) {
+	    var url = getBaseUrl();
+	    if (params.nextPage) {
+	      params.query = lastUsedQuery;
+	      url += '&pageToken=' + nextPageToken;
+	    } else {
+	      lastUsedQuery = params.query;
+	    }
+
+	    url += '&q=' + escape(params.query);
+
 	    var deferred = Q.defer();
 	    var request = new XMLHttpRequest();
-	    request.open('GET', getBaseUrl() + '&q=' + escape(params.query), true);
+	    request.open('GET', url, true);
 
 	    request.onload = function () {
 	      if (this.status >= 200 && this.status < 400) {
@@ -27171,6 +27234,64 @@
 
 /***/ },
 /* 118 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(process) {/**
+	 * Copyright 2013-2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule keyMirror
+	 * @typechecks static-only
+	 */
+
+	'use strict';
+
+	var invariant = __webpack_require__(36);
+
+	/**
+	 * Constructs an enumeration with keys equal to their value.
+	 *
+	 * For example:
+	 *
+	 *   var COLORS = keyMirror({blue: null, red: null});
+	 *   var myColor = COLORS.blue;
+	 *   var isColorValid = !!COLORS[myColor];
+	 *
+	 * The last line could not be performed if the values of the generated enum were
+	 * not equal to their keys.
+	 *
+	 *   Input:  {key1: val1, key2: val2}
+	 *   Output: {key1: key1, key2: key2}
+	 *
+	 * @param {object} obj
+	 * @return {object}
+	 */
+	var keyMirror = function(obj) {
+	  var ret = {};
+	  var key;
+	  ("production" !== process.env.NODE_ENV ? invariant(
+	    obj instanceof Object && !Array.isArray(obj),
+	    'keyMirror(...): Argument must be an object.'
+	  ) : invariant(obj instanceof Object && !Array.isArray(obj)));
+	  for (key in obj) {
+	    if (!obj.hasOwnProperty(key)) {
+	      continue;
+	    }
+	    ret[key] = key;
+	  }
+	  return ret;
+	};
+
+	module.exports = keyMirror;
+
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(42)))
+
+/***/ },
+/* 119 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -27239,7 +27360,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(42)))
 
 /***/ },
-/* 119 */
+/* 120 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -27272,64 +27393,6 @@
 
 	module.exports = forEachAccumulated;
 
-
-/***/ },
-/* 120 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(process) {/**
-	 * Copyright 2013-2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule keyMirror
-	 * @typechecks static-only
-	 */
-
-	'use strict';
-
-	var invariant = __webpack_require__(36);
-
-	/**
-	 * Constructs an enumeration with keys equal to their value.
-	 *
-	 * For example:
-	 *
-	 *   var COLORS = keyMirror({blue: null, red: null});
-	 *   var myColor = COLORS.blue;
-	 *   var isColorValid = !!COLORS[myColor];
-	 *
-	 * The last line could not be performed if the values of the generated enum were
-	 * not equal to their keys.
-	 *
-	 *   Input:  {key1: val1, key2: val2}
-	 *   Output: {key1: key1, key2: key2}
-	 *
-	 * @param {object} obj
-	 * @return {object}
-	 */
-	var keyMirror = function(obj) {
-	  var ret = {};
-	  var key;
-	  ("production" !== process.env.NODE_ENV ? invariant(
-	    obj instanceof Object && !Array.isArray(obj),
-	    'keyMirror(...): Argument must be an object.'
-	  ) : invariant(obj instanceof Object && !Array.isArray(obj)));
-	  for (key in obj) {
-	    if (!obj.hasOwnProperty(key)) {
-	      continue;
-	    }
-	    ret[key] = key;
-	  }
-	  return ret;
-	};
-
-	module.exports = keyMirror;
-
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(42)))
 
 /***/ },
 /* 121 */
@@ -28861,9 +28924,9 @@
 	var EventConstants = __webpack_require__(65);
 	var EventPropagators = __webpack_require__(170);
 	var ExecutionEnvironment = __webpack_require__(87);
-	var FallbackCompositionState = __webpack_require__(171);
-	var SyntheticCompositionEvent = __webpack_require__(172);
-	var SyntheticInputEvent = __webpack_require__(173);
+	var FallbackCompositionState = __webpack_require__(173);
+	var SyntheticCompositionEvent = __webpack_require__(174);
+	var SyntheticInputEvent = __webpack_require__(175);
 
 	var keyOf = __webpack_require__(128);
 
@@ -29361,10 +29424,10 @@
 	var EventPropagators = __webpack_require__(170);
 	var ExecutionEnvironment = __webpack_require__(87);
 	var ReactUpdates = __webpack_require__(31);
-	var SyntheticEvent = __webpack_require__(174);
+	var SyntheticEvent = __webpack_require__(171);
 
 	var isEventSupported = __webpack_require__(71);
-	var isTextInputElement = __webpack_require__(175);
+	var isTextInputElement = __webpack_require__(172);
 	var keyOf = __webpack_require__(128);
 
 	var topLevelTypes = EventConstants.topLevelTypes;
@@ -30352,7 +30415,7 @@
 	var ReactClass = __webpack_require__(95);
 	var ReactElement = __webpack_require__(22);
 
-	var keyMirror = __webpack_require__(120);
+	var keyMirror = __webpack_require__(118);
 
 	var button = ReactElement.createFactory('button');
 
@@ -31714,10 +31777,10 @@
 	var EventConstants = __webpack_require__(65);
 	var EventPropagators = __webpack_require__(170);
 	var ReactInputSelection = __webpack_require__(184);
-	var SyntheticEvent = __webpack_require__(174);
+	var SyntheticEvent = __webpack_require__(171);
 
 	var getActiveElement = __webpack_require__(186);
-	var isTextInputElement = __webpack_require__(175);
+	var isTextInputElement = __webpack_require__(172);
 	var keyOf = __webpack_require__(128);
 	var shallowEqual = __webpack_require__(187);
 
@@ -31949,7 +32012,7 @@
 	var EventPluginUtils = __webpack_require__(92);
 	var EventPropagators = __webpack_require__(170);
 	var SyntheticClipboardEvent = __webpack_require__(189);
-	var SyntheticEvent = __webpack_require__(174);
+	var SyntheticEvent = __webpack_require__(171);
 	var SyntheticFocusEvent = __webpack_require__(190);
 	var SyntheticKeyboardEvent = __webpack_require__(191);
 	var SyntheticMouseEvent = __webpack_require__(176);
@@ -33698,8 +33761,8 @@
 	var EventConstants = __webpack_require__(65);
 	var EventPluginHub = __webpack_require__(66);
 
-	var accumulateInto = __webpack_require__(118);
-	var forEachAccumulated = __webpack_require__(119);
+	var accumulateInto = __webpack_require__(119);
+	var forEachAccumulated = __webpack_require__(120);
 
 	var PropagationPhases = EventConstants.PropagationPhases;
 	var getListener = EventPluginHub.getListener;
@@ -33825,200 +33888,6 @@
 
 /***/ },
 /* 171 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright 2013-2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule FallbackCompositionState
-	 * @typechecks static-only
-	 */
-
-	'use strict';
-
-	var PooledClass = __webpack_require__(83);
-
-	var assign = __webpack_require__(70);
-	var getTextContentAccessor = __webpack_require__(210);
-
-	/**
-	 * This helper class stores information about text content of a target node,
-	 * allowing comparison of content before and after a given event.
-	 *
-	 * Identify the node where selection currently begins, then observe
-	 * both its text content and its current position in the DOM. Since the
-	 * browser may natively replace the target node during composition, we can
-	 * use its position to find its replacement.
-	 *
-	 * @param {DOMEventTarget} root
-	 */
-	function FallbackCompositionState(root) {
-	  this._root = root;
-	  this._startText = this.getText();
-	  this._fallbackText = null;
-	}
-
-	assign(FallbackCompositionState.prototype, {
-	  /**
-	   * Get current text of input.
-	   *
-	   * @return {string}
-	   */
-	  getText: function() {
-	    if ('value' in this._root) {
-	      return this._root.value;
-	    }
-	    return this._root[getTextContentAccessor()];
-	  },
-
-	  /**
-	   * Determine the differing substring between the initially stored
-	   * text content and the current content.
-	   *
-	   * @return {string}
-	   */
-	  getData: function() {
-	    if (this._fallbackText) {
-	      return this._fallbackText;
-	    }
-
-	    var start;
-	    var startValue = this._startText;
-	    var startLength = startValue.length;
-	    var end;
-	    var endValue = this.getText();
-	    var endLength = endValue.length;
-
-	    for (start = 0; start < startLength; start++) {
-	      if (startValue[start] !== endValue[start]) {
-	        break;
-	      }
-	    }
-
-	    var minEnd = startLength - start;
-	    for (end = 1; end <= minEnd; end++) {
-	      if (startValue[startLength - end] !== endValue[endLength - end]) {
-	        break;
-	      }
-	    }
-
-	    var sliceTail = end > 1 ? 1 - end : undefined;
-	    this._fallbackText = endValue.slice(start, sliceTail);
-	    return this._fallbackText;
-	  }
-	});
-
-	PooledClass.addPoolingTo(FallbackCompositionState);
-
-	module.exports = FallbackCompositionState;
-
-
-/***/ },
-/* 172 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright 2013-2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule SyntheticCompositionEvent
-	 * @typechecks static-only
-	 */
-
-	'use strict';
-
-	var SyntheticEvent = __webpack_require__(174);
-
-	/**
-	 * @interface Event
-	 * @see http://www.w3.org/TR/DOM-Level-3-Events/#events-compositionevents
-	 */
-	var CompositionEventInterface = {
-	  data: null
-	};
-
-	/**
-	 * @param {object} dispatchConfig Configuration used to dispatch this event.
-	 * @param {string} dispatchMarker Marker identifying the event target.
-	 * @param {object} nativeEvent Native browser event.
-	 * @extends {SyntheticUIEvent}
-	 */
-	function SyntheticCompositionEvent(
-	  dispatchConfig,
-	  dispatchMarker,
-	  nativeEvent) {
-	  SyntheticEvent.call(this, dispatchConfig, dispatchMarker, nativeEvent);
-	}
-
-	SyntheticEvent.augmentClass(
-	  SyntheticCompositionEvent,
-	  CompositionEventInterface
-	);
-
-	module.exports = SyntheticCompositionEvent;
-
-
-/***/ },
-/* 173 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright 2013-2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule SyntheticInputEvent
-	 * @typechecks static-only
-	 */
-
-	'use strict';
-
-	var SyntheticEvent = __webpack_require__(174);
-
-	/**
-	 * @interface Event
-	 * @see http://www.w3.org/TR/2013/WD-DOM-Level-3-Events-20131105
-	 *      /#events-inputevents
-	 */
-	var InputEventInterface = {
-	  data: null
-	};
-
-	/**
-	 * @param {object} dispatchConfig Configuration used to dispatch this event.
-	 * @param {string} dispatchMarker Marker identifying the event target.
-	 * @param {object} nativeEvent Native browser event.
-	 * @extends {SyntheticUIEvent}
-	 */
-	function SyntheticInputEvent(
-	  dispatchConfig,
-	  dispatchMarker,
-	  nativeEvent) {
-	  SyntheticEvent.call(this, dispatchConfig, dispatchMarker, nativeEvent);
-	}
-
-	SyntheticEvent.augmentClass(
-	  SyntheticInputEvent,
-	  InputEventInterface
-	);
-
-	module.exports = SyntheticInputEvent;
-
-
-/***/ },
-/* 174 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -34188,7 +34057,7 @@
 
 
 /***/ },
-/* 175 */
+/* 172 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -34232,6 +34101,200 @@
 	}
 
 	module.exports = isTextInputElement;
+
+
+/***/ },
+/* 173 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright 2013-2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule FallbackCompositionState
+	 * @typechecks static-only
+	 */
+
+	'use strict';
+
+	var PooledClass = __webpack_require__(83);
+
+	var assign = __webpack_require__(70);
+	var getTextContentAccessor = __webpack_require__(210);
+
+	/**
+	 * This helper class stores information about text content of a target node,
+	 * allowing comparison of content before and after a given event.
+	 *
+	 * Identify the node where selection currently begins, then observe
+	 * both its text content and its current position in the DOM. Since the
+	 * browser may natively replace the target node during composition, we can
+	 * use its position to find its replacement.
+	 *
+	 * @param {DOMEventTarget} root
+	 */
+	function FallbackCompositionState(root) {
+	  this._root = root;
+	  this._startText = this.getText();
+	  this._fallbackText = null;
+	}
+
+	assign(FallbackCompositionState.prototype, {
+	  /**
+	   * Get current text of input.
+	   *
+	   * @return {string}
+	   */
+	  getText: function() {
+	    if ('value' in this._root) {
+	      return this._root.value;
+	    }
+	    return this._root[getTextContentAccessor()];
+	  },
+
+	  /**
+	   * Determine the differing substring between the initially stored
+	   * text content and the current content.
+	   *
+	   * @return {string}
+	   */
+	  getData: function() {
+	    if (this._fallbackText) {
+	      return this._fallbackText;
+	    }
+
+	    var start;
+	    var startValue = this._startText;
+	    var startLength = startValue.length;
+	    var end;
+	    var endValue = this.getText();
+	    var endLength = endValue.length;
+
+	    for (start = 0; start < startLength; start++) {
+	      if (startValue[start] !== endValue[start]) {
+	        break;
+	      }
+	    }
+
+	    var minEnd = startLength - start;
+	    for (end = 1; end <= minEnd; end++) {
+	      if (startValue[startLength - end] !== endValue[endLength - end]) {
+	        break;
+	      }
+	    }
+
+	    var sliceTail = end > 1 ? 1 - end : undefined;
+	    this._fallbackText = endValue.slice(start, sliceTail);
+	    return this._fallbackText;
+	  }
+	});
+
+	PooledClass.addPoolingTo(FallbackCompositionState);
+
+	module.exports = FallbackCompositionState;
+
+
+/***/ },
+/* 174 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright 2013-2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule SyntheticCompositionEvent
+	 * @typechecks static-only
+	 */
+
+	'use strict';
+
+	var SyntheticEvent = __webpack_require__(171);
+
+	/**
+	 * @interface Event
+	 * @see http://www.w3.org/TR/DOM-Level-3-Events/#events-compositionevents
+	 */
+	var CompositionEventInterface = {
+	  data: null
+	};
+
+	/**
+	 * @param {object} dispatchConfig Configuration used to dispatch this event.
+	 * @param {string} dispatchMarker Marker identifying the event target.
+	 * @param {object} nativeEvent Native browser event.
+	 * @extends {SyntheticUIEvent}
+	 */
+	function SyntheticCompositionEvent(
+	  dispatchConfig,
+	  dispatchMarker,
+	  nativeEvent) {
+	  SyntheticEvent.call(this, dispatchConfig, dispatchMarker, nativeEvent);
+	}
+
+	SyntheticEvent.augmentClass(
+	  SyntheticCompositionEvent,
+	  CompositionEventInterface
+	);
+
+	module.exports = SyntheticCompositionEvent;
+
+
+/***/ },
+/* 175 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright 2013-2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule SyntheticInputEvent
+	 * @typechecks static-only
+	 */
+
+	'use strict';
+
+	var SyntheticEvent = __webpack_require__(171);
+
+	/**
+	 * @interface Event
+	 * @see http://www.w3.org/TR/2013/WD-DOM-Level-3-Events-20131105
+	 *      /#events-inputevents
+	 */
+	var InputEventInterface = {
+	  data: null
+	};
+
+	/**
+	 * @param {object} dispatchConfig Configuration used to dispatch this event.
+	 * @param {string} dispatchMarker Marker identifying the event target.
+	 * @param {object} nativeEvent Native browser event.
+	 * @extends {SyntheticUIEvent}
+	 */
+	function SyntheticInputEvent(
+	  dispatchConfig,
+	  dispatchMarker,
+	  nativeEvent) {
+	  SyntheticEvent.call(this, dispatchConfig, dispatchMarker, nativeEvent);
+	}
+
+	SyntheticEvent.augmentClass(
+	  SyntheticInputEvent,
+	  InputEventInterface
+	);
+
+	module.exports = SyntheticInputEvent;
 
 
 /***/ },
@@ -34369,8 +34432,8 @@
 
 	var ReactBrowserEventEmitter = __webpack_require__(20);
 
-	var accumulateInto = __webpack_require__(118);
-	var forEachAccumulated = __webpack_require__(119);
+	var accumulateInto = __webpack_require__(119);
+	var forEachAccumulated = __webpack_require__(120);
 	var invariant = __webpack_require__(36);
 
 	function remove(event) {
@@ -35223,7 +35286,7 @@
 
 	'use strict';
 
-	var SyntheticEvent = __webpack_require__(174);
+	var SyntheticEvent = __webpack_require__(171);
 
 	/**
 	 * @interface Event
@@ -35458,7 +35521,7 @@
 
 	'use strict';
 
-	var SyntheticEvent = __webpack_require__(174);
+	var SyntheticEvent = __webpack_require__(171);
 
 	var getEventTarget = __webpack_require__(182);
 
@@ -38635,7 +38698,7 @@
 
 	'use strict';
 
-	var keyMirror = __webpack_require__(120);
+	var keyMirror = __webpack_require__(118);
 
 	/**
 	 * When a component's children are updated, a series of update configuration
