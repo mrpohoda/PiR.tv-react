@@ -3,7 +3,11 @@ var Q = require('q');
 var YOUTUBE_API_KEY = 'AIzaSyCMgqDPWiH8SWHABbgwmAxoG_IHRMMj9-0';
 var YOUTUBE_RESULT_LIMIT = 20;
 var getBaseUrl = function () {
-  return 'https://www.googleapis.com/youtube/v3/search?key=' + YOUTUBE_API_KEY + '&part=snippet&maxResults=' + YOUTUBE_RESULT_LIMIT;
+  return 'https://www.googleapis.com/youtube/v3/search?' +
+    'key=' + YOUTUBE_API_KEY +
+    '&part=snippet' +
+    '&maxResults=' + YOUTUBE_RESULT_LIMIT +
+    '&type=video';
 };
 
 // this is used for remembering which query was used
