@@ -4,7 +4,8 @@ var FluxPlayerConstants = require('../constants/FluxPlayerConstants');
 var _ = require('lodash');
 var Firebase = require("firebase");
 
-var firebaseFavouritesRef = new Firebase("https://pirtv.firebaseio.com/favourites");
+var FIREBASE_FAVOURITES_URL = 'https://pirtv.firebaseio.com/favourites';
+var firebaseFavouritesRef = new Firebase(FIREBASE_FAVOURITES_URL);
 
 // Define initial data points
 var _favouriteMovies = [],
@@ -73,6 +74,22 @@ firebaseFavouritesRef.on('child_added', function(snapshot) {
   emitChange();
 });
 
+function getFirebaseMovie(id) {
+  var url = FIREBASE_FAVOURITES_URL + '/' + id;
+  return new Firebase(url);
+}
+
+function addToFavourites(movie, category) {
+  var item = getFirebaseMovie(movie.id);
+  movie.category = category;
+  item.set(movie);
+}
+
+function removeFromFavourites(movie) {
+  var item = getFirebaseMovie(movie.id);
+  item.remove();
+}
+
 // Register callback with AppDispatcher
 AppDispatcher.register(function(payload) {
   var action = payload.action;
@@ -96,6 +113,14 @@ AppDispatcher.register(function(payload) {
       _movies = _favouriteMovies.filter(function(movie){
         return movie.movie.category === _selectedCategory;
       });
+      break;
+
+    case FluxPlayerConstants.ADD_TO_FAVOURITES:
+      addToFavourites(action.data.movie, action.data.category);
+      break;
+
+    case FluxPlayerConstants.REMOVE_FROM_FAVOURITES:
+      removeFromFavourites(action.data);
       break;
 
     case FluxPlayerConstants.SHOW_NEXT_PAGE_MOVIES:

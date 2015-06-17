@@ -26,6 +26,20 @@ let FluxPlayerActions = {
     })
   },
 
+  addToFavourites: function(data) {
+    AppDispatcher.handleAction({
+      actionType: FluxPlayerConstants.ADD_TO_FAVOURITES,
+      data: data
+    })
+  },
+
+  removeFromFavourites: function(data) {
+    AppDispatcher.handleAction({
+      actionType: FluxPlayerConstants.REMOVE_FROM_FAVOURITES,
+      data: data
+    })
+  },
+
   searchMovies: function(data) {
     YoutubeApi.findMovies({query: data}).then(function(movies){
       AppDispatcher.handleAction({

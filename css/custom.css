@@ -8,3 +8,11 @@
 	width: 120px;
 	height: 90px;
 }
+
+.movie .bookmark {
+	transform: translate(50%, 50%);
+}
+
+.ReactModal__Overlay {
+	z-index: 1000;
+}
