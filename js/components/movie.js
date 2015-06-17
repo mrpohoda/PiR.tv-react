@@ -1,4 +1,5 @@
 import React from 'react';
+import Bookmark from './bookmark.js';
 
 let Movie = React.createClass({
 	onPlay: function(e){
@@ -8,17 +9,22 @@ let Movie = React.createClass({
 		}
 	},
 	render: function(){
-		var category;
-		if (this.props.movie.category) {
-			category = <div><br /><span className="label">{this.props.movie.category}</span></div>;
-		}
 		return (
-			<li className="movie with-chevron" onClick={this.onPlay}>
-				<a className="clearfix" href="javascript:">
-					<img src={this.props.movie.preview} />
-					<span>{this.props.movie.title}</span>
-					{category}
-				</a>
+			<li className="movie with-chevron">
+				<div className="row">
+					<div className="small-2 medium-1 columns">
+						<Bookmark
+							movie={this.props.movie}
+							categories={this.props.categories}
+						></Bookmark>
+					</div>
+					<div className="small-10 medium-11 columns">
+						<a className="clearfix" onClick={this.onPlay}>
+							<img src={this.props.movie.preview} />
+							<span>{this.props.movie.title}</span>
+						</a>
+					</div>
+				</div>
 			</li>
 		);
 	}

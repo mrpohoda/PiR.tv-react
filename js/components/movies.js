@@ -1,7 +1,7 @@
 import React from 'react';
 import Movie from './movie.js';
 
-var FluxPlayerActions = require('../actions/FluxPlayerActions');
+let FluxPlayerActions = require('../actions/FluxPlayerActions');
 
 let Favourites = React.createClass({
 	onPlayHandler: function(movie){
@@ -27,7 +27,7 @@ let Favourites = React.createClass({
 				<ul>
 				{
 					this.props.movies.map(function(movie) {
-						return <Movie movie={movie.movie} key={movie.key} onPlay={this.onPlayHandler} />
+						return <Movie movie={movie.movie} key={movie.key} onPlay={this.onPlayHandler} categories={this.props.categories} />
 					}.bind(this))
 				}
 				</ul>
