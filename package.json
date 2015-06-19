@@ -5,7 +5,7 @@
   "scripts": {
     "start": "NODE_ENV=production node server.js",
     "start-dev": "node server-dev.js",
-    "build": "node /home/mrpohoda/npm/lib/node_modules/webpack/bin/webpack.js --progress --profile --colors"
+    "build": "node /home/mrpohoda/npm/lib/node_modules/webpack/bin/webpack.js -p --progress --profile --colors"
   },
   "dependencies": {
     "omxcontrol": "0.0.1",
